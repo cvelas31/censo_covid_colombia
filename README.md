@@ -25,6 +25,9 @@ Each folder contains 5 geenral tables:
 - PERSONAS: People information like: Gender, Age, Relation with home head, City of Birth, Home 5 years ago, Home 1 year ago, Health issues, Treatment, Dificulties, Alphabetism, Education Level, Work, Civil Status, Sons, Sons out of Colombia, etc.
 - GEOREFERENCIA: Identifiers inside a Colombia. Depertment, City, Comuna, Urban area, Rural area, Neighborhood, Building number.
 
+**Notes:**
+- Rename Atlantico Folder: 08_AtlanticoCSV -> 08_Atlantico_CSV
+
 ### Colombia COVID-19 dataset
 Gather from INS (Instituto Nacional de Salud - Natinal Instute of Health)
 National Information about COVID 19 cases.
