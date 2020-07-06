@@ -3,7 +3,7 @@
 ## Project Summary
 Relation COVID data with Census data for Colombia in order:
 - To do some Analytics and identify vulnerable zones.
-- To do esttimates about mortality rates acoording to the zone
+- To do estimates about mortality rates acoording to the zone
 - To predict how the curve will evolve and identify pain zones
 - To estimate UCI capacity in Bogota and how it is evolving.
 
@@ -28,6 +28,10 @@ Each folder contains 5 geenral tables:
 **Notes:**
 - Rename Atlantico Folder: 08_AtlanticoCSV -> 08_Atlantico_CSV
 
+### DIVIPOLA
+División departamental y municipal de Colombia
+Diccionario de codigo de municipios
+
 ### Colombia COVID-19 dataset
 Gather from INS (Instituto Nacional de Salud - Natinal Instute of Health)
 National Information about COVID 19 cases.
@@ -41,6 +45,29 @@ The information here corresponds to:
 - COVID-19 samples proocessed by Department/Main City
 - Bogota D.C UCI services
 - COVIID-19 positive cases with age, city, recovered, severity, nexus, gender, death
+
+## Scope of the project
+The aim of this project is to combine the Census data and Covid 19 data:
+- To identify vulnerable people.
+    - Old people (>65 years old)
+    - People with comorbidity (Asthma, Heart Diseases, etc)
+    - People wthout access  to water or bad food conditions
+
+- To identify zones where this vulnerable people are located to focus the health attention on those places and gather UCIs to that place
+
+- To estimate changes on expected life with COVID-19.
+- To have a clean and complete dataset with all information about census data and COVID-19 cases in Colombia.
+
+## Exploring data
+### Knowing the data
+At first the data is displayed in jupyter in order to identify and clarify what a column means, some columns that will not be useful, and to clean the data according to nulls or similar things.
+
+The exploration are found:
+- Census data can be found at XXXXXX
+- Covid-19 cases can be found at XXXXX
+
+
+
 
 ## Other Scenarios
 - The data was increased by 100x.
