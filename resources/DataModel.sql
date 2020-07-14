@@ -1,0 +1,146 @@
+CREATE TABLE `VIVIENDA` (
+  `U_DPTO` int,
+  `U_MPIO` int,
+  `UA_CLASE` int,
+  `U_EDIFICA` int,
+  `COD_ENCUESTAS` int,
+  `U_VIVIENDA` int,
+  `UVA_USO_UNIDAD` int,
+  `V_TIPO_VIV` float,
+  `V_CON_OCUP` float,
+  `V_TOT_HOG` float,
+  `V_MAT_PARED` float,
+  `V_MAT_PISO` float,
+  `VA_EE` float,
+  `VA1_ESTRATO` float,
+  `VB_ACU` float,
+  `VC_ALC` float,
+  `VD_GAS` float,
+  `VE_RECBAS` float,
+  `VE1_QSEM` float,
+  `VF_INTERNET` float,
+  `V_TIPO_SERSA` float,
+  `L_TIPO_INST` float,
+  `L_EXISTEHOG` float,
+  `L_TOT_PERL` float,
+  PRIMARY KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`)
+);
+
+CREATE TABLE `HOGAR` (
+  `U_DPTO` int,
+  `U_MPIO` int,
+  `UA_CLASE` int,
+  `COD_ENCUESTAS` int,
+  `U_VIVIENDA` int,
+  `H_NROHOG` int,
+  `H_NRO_CUARTOS` float,
+  `H_NRO_DORMIT` float,
+  `H_DONDE_PREPALIM` float,
+  `H_AGUA_COCIN` float,
+  `HA_NRO_FALL` float,
+  `HA_TOT_PER` float,
+  PRIMARY KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `H_NROHOG`)
+);
+
+CREATE TABLE `PERSONAS` (
+  `U_DPTO` int,
+  `U_MPIO` int,
+  `UA_CLASE` int,
+  `U_EDIFICA` int,
+  `COD_ENCUESTAS` int,
+  `U_VIVIENDA` int,
+  `P_NROHOG` int,
+  `P_NRO_PER` int,
+  `P_SEXO` int,
+  `P_EDADR` int,
+  `P_PARENTESCOR` float,
+  `PA_LUG_NAC` int,
+  `PA_VIVIA_5ANOS` float,
+  `PA_VIVIA_1ANO` float,
+  `P_ENFERMO` float,
+  `P_QUEHIZO_PPAL` float,
+  `PA_LO_ATENDIERON` float,
+  `PA1_CALIDAD_SERV` float,
+  `CONDICION_FISICA` float,
+  `P_ALFABETA` float,
+  `PA_ASISTENCIA` float,
+  `P_NIVEL_ANOSR` float,
+  `P_TRABAJO` float,
+  `P_EST_CIVIL` float,
+  `PA_HNV` float,
+  `PA1_THNV` float,
+  `PA2_HNVH` float,
+  `PA3_HNVM` float,
+  `PA_HNVS` float,
+  `PA1_THSV` float,
+  `PA2_HSVH` float,
+  `PA3_HSVM` float,
+  `PA_HFC` float,
+  `PA1_THFC` float,
+  `PA2_HFCH` float,
+  `PA3_HFCM` float,
+  PRIMARY KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`, `P_NROHOG`, `P_NRO_PER`)
+);
+
+CREATE TABLE `FALLECIDOS` (
+  `U_DPTO` int,
+  `U_MPIO` int,
+  `UA_CLASE` int,
+  `COD_ENCUESTAS` int,
+  `U_VIVIENDA` int,
+  `F_NROHOG` int,
+  `FA1_NRO_FALL` int,
+  `FA2_SEXO_FALL` int,
+  `FA3_EDAD_FALL` int,
+  `FA4_CERT_DEFUN` int,
+  PRIMARY KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `F_NROHOG`)
+);
+
+CREATE TABLE `GEOREFERENCIACION` (
+  `U_DPTO` int,
+  `U_MPIO` int,
+  `UA_CLASE` int,
+  `UA1_LOCALIDAD` int,
+  `U_SECT_RUR` int,
+  `U_SECC_RUR` int,
+  `UA2_CPOB` int,
+  `U_SECT_URB` int,
+  `U_SECC_URB` int,
+  `U_MZA` int,
+  `U_EDIFICA` int,
+  `COD_ENCUESTAS` int,
+  `U_VIVIENDA` int,
+  PRIMARY KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`)
+);
+
+CREATE TABLE `DIVIPOLA` (
+  `cod_depto` varchar(255),
+  `cod_mpio` varchar(255),
+  `dpto` varchar(255),
+  `nom_mpio` varchar(255),
+  `tipo_municipio` varchar(255),
+  PRIMARY KEY (`cod_depto`, `cod_mpio`)
+);
+
+ALTER TABLE `DIVIPOLA` ADD FOREIGN KEY (`cod_depto`, `cod_mpio`) REFERENCES `GEOREFERENCIACION` (`U_DPTO`, `U_MPIO`);
+
+ALTER TABLE `DIVIPOLA` ADD FOREIGN KEY (`cod_depto`, `cod_mpio`) REFERENCES `FALLECIDOS` (`U_DPTO`, `U_MPIO`);
+
+ALTER TABLE `DIVIPOLA` ADD FOREIGN KEY (`cod_depto`, `cod_mpio`) REFERENCES `VIVIENDA` (`U_DPTO`, `U_MPIO`);
+
+ALTER TABLE `DIVIPOLA` ADD FOREIGN KEY (`cod_depto`, `cod_mpio`) REFERENCES `PERSONAS` (`U_DPTO`, `U_MPIO`);
+
+ALTER TABLE `DIVIPOLA` ADD FOREIGN KEY (`cod_depto`, `cod_mpio`) REFERENCES `HOGAR` (`U_DPTO`, `U_MPIO`);
+
+ALTER TABLE `VIVIENDA` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`) REFERENCES `HOGAR` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`);
+
+ALTER TABLE `HOGAR` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `H_NROHOG`) REFERENCES `PERSONAS` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `P_NROHOG`);
+
+ALTER TABLE `PERSONAS` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`) REFERENCES `GEOREFERENCIACION` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`);
+
+ALTER TABLE `VIVIENDA` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`) REFERENCES `GEOREFERENCIACION` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`);
+
+ALTER TABLE `PERSONAS` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`) REFERENCES `VIVIENDA` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `U_EDIFICA`, `COD_ENCUESTAS`, `U_VIVIENDA`);
+
+ALTER TABLE `FALLECIDOS` ADD FOREIGN KEY (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `F_NROHOG`) REFERENCES `HOGAR` (`U_DPTO`, `U_MPIO`, `UA_CLASE`, `COD_ENCUESTAS`, `U_VIVIENDA`, `H_NROHOG`);
+
