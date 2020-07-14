@@ -127,7 +127,7 @@ Here is the documentation for both of them
 7. Using AWS EMR run the ######### notebook. Which saves the final datasets to s3 where they can be downloaded to do some analytics.
 
 ## Other Scenarios
-- Instead of using the Laptop for uploading the files to s3 it would be better using and EC2 instance with a faster connections. But it would be more expensive. 
+- Instead of using the Laptop for uploading the files to s3 it would be better using and EC2 instance with a faster connection. But it would be more expensive. 
 - The data was increased by 100x.
     - If tha data was increased by 100x, (hope not for covid hahaha), definitely Spark has to be used. And we need to be careful when doing the joins, as spark has some similar features as Redshift for joins (Broadcast and proper partitions on the dataset).
     - The partition for the CENSUS data may be skewed by department but it will be better to have it in that way. As we may only look for a particular city, department or the  complete country.

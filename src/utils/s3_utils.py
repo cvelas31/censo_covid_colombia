@@ -8,7 +8,7 @@ def pd2s3(df, bucket, key, s3_resource):
     csv_buffer = StringIO()
     df.to_csv(csv_buffer)
     s3_resource.Object(bucket, key).put(Body=csv_buffer.getvalue())
-    print(f"File saved in S3 {bucket}/{s3_key_divipola}")
+    print(f"File saved in S3 {bucket}/{key}")
 
 
 def upload_files_to_s3(s3_client, dictionary_paths, bucket, prefix_censo="raw-data"):
@@ -31,7 +31,12 @@ def upload_files_to_s3(s3_client, dictionary_paths, bucket, prefix_censo="raw-da
             paths = filepath.split("/")
             file_name_s3 = os.path.join(prefix_censo, *paths[-4:])
             print(file_name_s3)
-            response = s3_client.upload_file(Bucket=bucket,
-                                             Key=file_name_s3,
-                                             Filename=filepath)
+            try:
+                response = s3_client.head_object(Bucket=bucket,
+                                    Key=file_name_s3)
+            except Exception as e:
+                if e.response["Error"]["Message"] == "Not Found":
+                    response = s3_client.upload_file(Bucket=bucket,
+                                                    Key=file_name_s3,
+                                                    Filename=filepath)
     print("Files uploaded to S3")

@@ -1,16 +1,24 @@
 import pandas as pd
+import numpy as np
 from sodapy import Socrata
 import os
 import boto3
+import configparser
 from utils.s3_utils import pd2s3
 
 
 if __name__ == "__main__":
+    config = configparser.ConfigParser()
+    config.read('aws.cfg')
+    aws = config["AWS"]
+
     # Paths and Inputs
     filename = "divipola.csv"
-    divipola_file_path = os.path.join(os.getcwd(), "..", "data", filename)
+    divipola_file_path = os.path.join(os.getcwd(), "data", filename)
     bucket = 'censo-covid'
-    s3_resource = boto3.resource('s3')
+    s3_resource = boto3.resource('s3',
+                                 aws_access_key_id=aws['AWS_ACCESS_KEY_ID'],
+                                 aws_secret_access_key=aws['AWS_SECRET_ACCESS_KEY'])
     s3_key_divipola = os.path.join("raw-data", filename)
 
     client = Socrata("www.datos.gov.co", None)
