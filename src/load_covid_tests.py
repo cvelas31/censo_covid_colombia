@@ -34,8 +34,7 @@ if __name__ == "__main__":
             if column=="positividad_acumulada":
                 df_muestras[column] = df_muestras[column].str.replace(",", ".")
             df_muestras[column] = df_muestras[column].astype(np.float64)
-
-    df_muestras.to_csv(covid_tests_file_path)
+    df_muestras.to_csv(covid_tests_file_path, index=False)
     print("File saved as ", covid_tests_file_path)
     pd2s3(df_muestras, bucket, s3_key_covid_tests, s3_resource)
     

@@ -49,6 +49,6 @@ if __name__ == "__main__":
     df["divipola_dpto"] = df["c_digo_divipola"].str[:2].astype(int)
     df["divipola_mpio"] = df["c_digo_divipola"].str[2:].astype(int)
 
-    df.to_csv(covid_file_path)
+    df.to_csv(covid_file_path, index=False)
     print("File saved as ", covid_file_path)
     pd2s3(df, bucket, s3_key_covid, s3_resource)

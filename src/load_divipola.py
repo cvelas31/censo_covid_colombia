@@ -33,6 +33,6 @@ if __name__ == "__main__":
                                       'dpto': np.dtype('O'),
                                       'nom_mpio': np.dtype('O'),
                                       'tipo_municipio': np.dtype('O')})
-    df_divipola.to_csv(divipola_file_path)
+    df_divipola.to_csv(divipola_file_path, index=False)
     print("File saved as ", divipola_file_path)
     pd2s3(df_divipola, bucket, s3_key_divipola, s3_resource)
