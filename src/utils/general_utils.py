@@ -33,3 +33,12 @@ def create_dict_files(directory):
                     current_dict_files["MGN"] = os.path.join(curr_path, c_file)
             dict_paths_departments[name[3:]] = current_dict_files
     return dict_paths_departments
+
+def create_dir(path):
+    """
+    Create directory from path
+    """
+    if os.path.exists(path):
+        print(f"{path} dir exists")
+    else:
+        os.mkdir(path)

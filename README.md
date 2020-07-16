@@ -98,9 +98,29 @@ The dbdiagram description is [here](./resources/DataModel.sql)
     - There are some quality checks that are going to be used
 - We are going to do the following with this data:
     - Combine all departments data into one big table with all the census information and save to s3 for further information or needings.
-    - Do mutiple aggregations by city to ccombine with the covid data and save to s3
-- All of this process is going to be executed in Spark as it is faster, and can handle easily big data. Also it is scalable as more deppartments are added. This data will be stored in s3 partitioned by department and city (Doesn't matter if skewed as you may want an speccific city or department)
+    - Do mutiple aggregations by city to combine with the covid data and save to s3
+- All of this process is going to be executed in Spark as it is faster, and can handle easily big data. Also it is scalable as more departments are added. This data will be stored in s3 partitioned by department (Doesn't matter if it is skewed as you may want an specific city or department)
 
+##### Aggregations by city used:
+**Personas**
+- VA_EE: 1 Servicio Electrico. Porcentaje de personas con acceso a energia electrica.
+- VA1_ESTRATO: [0-6, 9] Porcentaje de personas por estrato
+- VB_ACU: Servicio de acueducto. Porcentaje de personas con acceso a acueducto.
+- VF_INTERNET: Servicio de Internet
+- HA_TO_PER: Promedio de personas por hogar
+- P_EDADR: [0-4, 5-9, 10-14, 15-19, .. >100] Piramide poblacional por ciudad.
+- P_ALFABETA: Porcentaje de alfabetismo
+- PA1_CALIDAD_SERV: Promedio calidad de servicio de salud [1-4 ]
+- P_NIVEL_ANOSR: Personas por nivel educativo (Porcentaje por nivel) [1-9, 10 Ninguno, 99 No informa, NA]
+- PA1_THFC: Número de hijos q viven fuera de Colombia
+
+**Fallecidos**
+- FA2_SEXO_FALL: Porcentaje fallecidos hombres
+- FA3_EDAD_FALL: Edad al morir Promedio de edad al morir (Expectativa de Vida)
+- FA2_SEXO_FALL&FA3_EDAD_FALL: Expectativa de vida por sexo
+- VA1_ESTRATO&FA3_EDAD_FALL: Expectativa por Estrato
+- VB_ACU&FA3_EDAD_FALL: Expectativa por Acueducto
+- UA_CLASE&FA3_EDAD_FALL: Expectativa por Clase municipal (1 -Cabecera, 2-Centro poblado, 3-Rural Disperso, 4-Resto Rural)
     
 ### **COVID**
 The covid data are two tables: COVID-19 general data for Colombia and the covid-19 test samples data. Both of them are gather from the Socrata API. It is updated daily.
@@ -115,8 +135,6 @@ Here is the documentation for both of them
 - The DIVIPOLA code for department was not the equal to the codigo department in the dataset. DIVIPOLA is going to be used as it was also used in the Census.
 - This two tables are going to be cleaned and uploaded to s3 as part of the data lake, and to be used in the joining with spark.
 
-
-
 ## Execution steps:
 1. Download the Census data into the data directory under `censo` name.
 2. Unzip the Census data and select only the desired departments.
@@ -124,7 +142,15 @@ Here is the documentation for both of them
 4. Run from the root `python src/load_covid.py`to clean and upload the covid data data to s3
 5. Run from the root `python src/load_divipola.py`to clean and upload the DIVIPOLA data data to s3
 6. Run from the root `python src/load_covid_tests.py`to clean and upload the covid test samples data data to s3
-7. Using AWS EMR run the ######### notebook. Which saves the final datasets to s3 where they can be downloaded to do some analytics.
+7. Using AWS EMR run the `data-pipeline-v0.ipynb` notebook. Which saves the final datasets to s3 where they can be downloaded to do some analytics.
+8. Using AWS EMR run the `data-aggregation-v0.ipynb`. Which does the aggregations for the personas datasets by city
+9. Finally the joins are done `python src/join_agg_per_covid.py` and `python src/join_agg_fall_covid`
+10. Do some visualization and analytics using the data in S3:
+    - Visualization COVID
+    - Visualization Aggregates Personas
+    - Visualization Aggregates Fallecidos
+    - Visualization Join Personas&COVID
+    - Visualization Join Fallecidos&COVID
 
 ## Other Scenarios
 - Instead of using the Laptop for uploading the files to s3 it would be better using and EC2 instance with a faster connection. But it would be more expensive. 

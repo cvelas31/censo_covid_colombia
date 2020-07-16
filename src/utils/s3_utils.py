@@ -1,6 +1,7 @@
 from io import StringIO
 import pandas as pd
 import os
+from .general_utils import create_dir
 
 
 def pd2s3(df, bucket, key, s3_resource):
@@ -33,25 +34,26 @@ def upload_files_to_s3(s3_client, dictionary_paths, bucket, prefix_censo="raw-da
             print(file_name_s3)
             try:
                 response = s3_client.head_object(Bucket=bucket,
-                                    Key=file_name_s3)
+                                                 Key=file_name_s3)
             except Exception as e:
                 if e.response["Error"]["Message"] == "Not Found":
                     response = s3_client.upload_file(Bucket=bucket,
-                                                    Key=file_name_s3,
-                                                    Filename=filepath)
+                                                     Key=file_name_s3,
+                                                     Filename=filepath)
     print("Files uploaded to S3")
+
 
 def get_censo_paths(bucket_s3, directory_key):
     """
     Get dictionary of census data for each department
-    
+
     Parameters:
     -----------
     bucket_s3 : s3.Bucket
         Boto3 Bucket object
     directory_key : path
         Directory key in S3
-    
+
     Return:
     -------
     dict_paths_departments : dict
@@ -66,21 +68,149 @@ def get_censo_paths(bucket_s3, directory_key):
             if "MGN" in list_paths[-1]:
                 if not(department in dict_paths_departments):
                     dict_paths_departments[department] = {}
-                dict_paths_departments[department].update({"MGN": os.path.join(f"s3a://{bucket_s3.name}", name)})                
+                dict_paths_departments[department].update(
+                    {"MGN": os.path.join(f"s3a://{bucket_s3.name}", name)})
             elif "FALL" in list_paths[-1]:
                 if not(department in dict_paths_departments):
                     dict_paths_departments[department] = {}
-                dict_paths_departments[department].update({"FALL": os.path.join(f"s3a://{bucket_s3.name}", name)})
+                dict_paths_departments[department].update(
+                    {"FALL": os.path.join(f"s3a://{bucket_s3.name}", name)})
             elif "HOG" in list_paths[-1]:
                 if not(department in dict_paths_departments):
                     dict_paths_departments[department] = {}
-                dict_paths_departments[department].update({"HOG": os.path.join(f"s3a://{bucket_s3.name}", name)})
+                dict_paths_departments[department].update(
+                    {"HOG": os.path.join(f"s3a://{bucket_s3.name}", name)})
             elif "VIV" in list_paths[-1]:
                 if not(department in dict_paths_departments):
                     dict_paths_departments[department] = {}
-                dict_paths_departments[department].update({"VIV": os.path.join(f"s3a://{bucket_s3.name}", name)})
+                dict_paths_departments[department].update(
+                    {"VIV": os.path.join(f"s3a://{bucket_s3.name}", name)})
             elif "PER" in list_paths[-1]:
                 if not(department in dict_paths_departments):
                     dict_paths_departments[department] = {}
-                dict_paths_departments[department].update({"PER": os.path.join(f"s3a://{bucket_s3.name}", name)})
+                dict_paths_departments[department].update(
+                    {"PER": os.path.join(f"s3a://{bucket_s3.name}", name)})
     return dict_paths_departments
+
+
+def download_files_from_s3(curr_dir, s3Bucket, prefix):
+    """
+    Download files insiide s3 'directory', keeping the same folder structure.
+
+    Parameters:
+    -----------
+    curr_dir : os.path
+        Root directory
+    s3Bucket : boto3.Bucket
+        Bucket where the prefix is located
+    prefix : os.path
+        s3 directory of s3Bucket to download 
+    
+    Return:
+    -------
+    None
+    """
+    if len(os.listdir(curr_dir)) > 1:
+        print(f"Already downloaded {prefix}")
+    else:
+        print("Downloading...")
+        for s3_object in s3Bucket.objects.filter(Prefix=prefix).all():
+            path, filename = os.path.split(s3_object.key)
+            print(path)
+            partial_dir = mk_partitioned_dir(curr_dir, path)
+            if filename:
+                s3Bucket.download_file(s3_object.key, os.path.join(partial_dir, filename))
+        print("Downloaded")
+
+
+def mk_partitioned_dir(curr_dir, path):
+    """
+    Recursive function to create same folder structure of partitioned dataset in s3
+
+    Parameters:
+    -----------
+    curr_dir : os.path
+        Current directory
+    path : str
+        Path of stored partitioned data. Ex: final-data/aggregates_personas/dpto=META
+
+    Return:
+    -------
+    curr_dir : os.path
+        Current local directory to store the file 
+    """
+    root = path.split("/")[0]
+    if len(root) == 0:
+        return curr_dir
+    elif "=" in root:
+        curr_dir = os.path.join(curr_dir, root)
+        create_dir(curr_dir)
+        return mk_partitioned_dir(curr_dir, path[len(root)+1:])
+    else:
+        return mk_partitioned_dir(curr_dir, path[len(root)+1:])
+
+
+def identified_partitioned_dir(path, key_val=None):
+    """
+    Recursive identifier of a partitioned directory extracting the key values in folder names
+
+    Parameters:
+    -----------
+    path : os.path
+        Path with metadata in folder names. Ex: final-data/aggregates_personas/dpto=META
+    key_val : None or dict
+        Dictionary where the the key values are stored
+    
+    Return:
+    key_val : dict
+        Key value dict. Ex: {dpto: META}
+    """
+    root = path.split("/")[0]
+    if len(root) == 0 and len(path.split("/"))<=1:
+        return key_val
+    elif "=" in root:
+        key = root.split("=")[0]
+        val = root.split("=")[1]
+        if key_val is None:
+            key_val = {key: val}
+        else:
+            key_val.update({key: val})
+        return identified_partitioned_dir(path[len(root)+1:], key_val=key_val)
+    else:
+        return identified_partitioned_dir(path[len(root)+1:], key_val=key_val)
+
+
+def read_multiple_csv(selected_dir, to_concat=[], header=0, n_files=10):
+    """
+    Recursive read partitioned csv dataset, adding follder name columns
+
+    Parameters:
+    -----------
+    selected_dir : os.path
+        Directory to search on for csvs
+    to_concat : list
+        List to store the pd.DataFrames read
+    header : int
+        Same as pd header on read_csv
+    n_files : int
+        Maximum number of files to read
+
+    Return:
+    -------
+    to_concat : list
+        List with all pd.DataFrames read from csvs
+    """
+    if len(to_concat) == n_files:
+        return to_concat
+    for path in os.listdir(selected_dir):
+        if path.endswith(".csv"):
+            aux = pd.read_csv(os.path.join(selected_dir, path), header=header)
+            dict_key_val = identified_partitioned_dir(selected_dir)
+            if dict_key_val is not None:
+                for key, val in dict_key_val.items():
+                    aux[key] = val
+            to_concat.append(aux)
+        elif os.path.isdir(os.path.join(selected_dir, path)):
+            to_concat = read_multiple_csv(os.path.join(selected_dir, path), to_concat=to_concat,
+                                          header=header, n_files=n_files)
+    return to_concat

@@ -1,6 +1,5 @@
 import os
 import boto3
-from boto3.s3.transfer import TransferConfig
 import configparser
 from utils.s3_utils import upload_files_to_s3
 from utils.general_utils import create_dict_files
