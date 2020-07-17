@@ -88,7 +88,7 @@ And we have some auxiliar tables:
 - DIVIPOLA: information about the municipalities and departments. (Dimension Table)
 
 The diagram of this db is the following
-![schema](./resources/DataModel.png). 
+![schema](./resources/DataModel.png).
 
 The dbdiagram description is [here](./resources/DataModel.sql)
 
@@ -119,7 +119,6 @@ The dbdiagram description is [here](./resources/DataModel.sql)
 - FA3_EDAD_FALL: Edad al morir Promedio de edad al morir (Expectativa de Vida)
 - FA2_SEXO_FALL&FA3_EDAD_FALL: Expectativa de vida por sexo
 - VA1_ESTRATO&FA3_EDAD_FALL: Expectativa por Estrato
-- VB_ACU&FA3_EDAD_FALL: Expectativa por Acueducto
 - UA_CLASE&FA3_EDAD_FALL: Expectativa por Clase municipal (1 -Cabecera, 2-Centro poblado, 3-Rural Disperso, 4-Resto Rural)
     
 ### **COVID**
@@ -135,7 +134,15 @@ Here is the documentation for both of them
 - The DIVIPOLA code for department was not the equal to the codigo department in the dataset. DIVIPOLA is going to be used as it was also used in the Census.
 - This two tables are going to be cleaned and uploaded to s3 as part of the data lake, and to be used in the joining with spark.
 
-## Execution steps:
+##### Aggregations by city used:
+**COVID**
+- FA2_SEXO_FALL: Porcentaje fallecidos hombres
+- FA3_EDAD_FALL: Edad al morir Promedio de edad al morir (Expectativa de Vida)
+- FA2_SEXO_FALL&FA3_EDAD_FALL: Expectativa de vida por sexo
+- VA1_ESTRATO&FA3_EDAD_FALL: Expectativa por Estrato
+- UA_CLASE&FA3_EDAD_FALL: Expectativa por Clase municipal (1 -Cabecera, 2-Centro poblado, 3-Rural Disperso, 4-Resto Rural)
+
+## Execution steps of the complete PIPELINE:
 1. Download the Census data into the data directory under `censo` name.
 2. Unzip the Census data and select only the desired departments.
 3. Run from the root `python src/load_censo.py`to upload the desired census data to s3
@@ -143,23 +150,34 @@ Here is the documentation for both of them
 5. Run from the root `python src/load_divipola.py`to clean and upload the DIVIPOLA data data to s3
 6. Run from the root `python src/load_covid_tests.py`to clean and upload the covid test samples data data to s3
 7. Using AWS EMR run the `data-pipeline-v0.ipynb` notebook. Which saves the final datasets to s3 where they can be downloaded to do some analytics.
-8. Using AWS EMR run the `data-aggregation-v0.ipynb`. Which does the aggregations for the personas datasets by city
-9. Finally the joins are done `python src/join_agg_per_covid.py` and `python src/join_agg_fall_covid`
-10. Do some visualization and analytics using the data in S3:
-    - Visualization COVID
-    - Visualization Aggregates Personas
-    - Visualization Aggregates Fallecidos
-    - Visualization Join Personas&COVID
-    - Visualization Join Fallecidos&COVID
+8. Using AWS EMR run the `data-aggregation-v0.ipynb`. Which does the aggregations for the personas, fallecidos and covid datasets by city. And finally joins aggregate-personas with aggregate-covid, and aggregate-fallecidos with aggegate-ovid
+9. Do some visualization and analytics using the data in S3:
+
+### Datasets in S3:
+- Complete Personas: Cotains all the information about the people in Colombia, including home, localization, buildings, etc. Path:`s3:/censo-covid/final-data/complete_personas`. c
+- Complete Fallecidos: Contains all the information about the deaths in Colombia, including home, localization, building status, etc. Path:`s3:/censo-covid/final-data/complete_falllecidos`. This data is partitioned by department. 
+- Covid: Cleaned covid dataset wiith new features to have compatibility with the census data. Path:`s3:/censo-covid/raw-data/covid.csv`.
+- Aggregates Personas: Aggregate data by city of complete personas. Path:`s3:/censo-covid/final-data/aggregates_personas`. This data is partitioned by department.
+- Aggregates Fallecidos: Aggregate data by city of complete Fallecidos. Path:`s3:/censo-covid/final-data/aggregates_fallecidos`. This data is partitioned by department.
+- Aggregates covid: Aggregate data by city of Covid. Path:`s3:/censo-covid/final-data/aggregates_covid`.
+- Joins Personas aggregates with covid: With all information regarding census and covid by city. Path:`s3:/censo-covid/final-data/join_personas_covid`.
+- Joins Fallecidos aggregates with covid: With all information regarding census and covid by city about deaths. Path:`s3:/censo-covid/final-data/join_fallecidos_covid`.
+
+### Visualizations
+- Visualization COVID
+- Visualization Aggregates Personas
+- Visualization Aggregates Fallecidos
+- Visualization Join Personas&COVID
+- Visualization Join Fallecidos&COVID
 
 ## Other Scenarios
-- Instead of using the Laptop for uploading the files to s3 it would be better using and EC2 instance with a faster connection. But it would be more expensive. 
+- Instead of using the Laptop for uploading the files to s3 it would be better using and EC2 instance with a faster connection. But it would be more expensive in dollars. 
 - The data was increased by 100x.
     - If tha data was increased by 100x, (hope not for covid hahaha), definitely Spark has to be used. And we need to be careful when doing the joins, as spark has some similar features as Redshift for joins (Broadcast and proper partitions on the dataset).
-    - The partition for the CENSUS data may be skewed by department but it will be better to have it in that way. As we may only look for a particular city, department or the  complete country.
-    - Also as the COVID table is updated daily, We will only need to INSERT batch of new records every day. This will need to have the covid data partitioned by the notification date. So we only create another small partition to the S3. Or using Redshift would be good but it will be so expensive.
+    - The partition for the CENSUS data may be skewed by main departments but it will be better to have it in that way. As we may only look for a particular city, department or the  complete country.
+    - Also as the COVID table is updated daily, We will only need to INSERT batch of new records every day. Doing this will lead to have the covid data partitioned by the notification date, so we can append easily by date. Or using Redshift would be good but it will be so expensive in dollars and because of disponibility.
 - The pipelines would be run on a daily basis by 7 am every day.
-    - This will not be the case for the Census data. But for the covid case this should be the adequate approach. I will need to use Airflow to Schedule this process. Call the API (Extract), process the data, remove some noise, adequate the dtypes, create new columns, etc (Transform) and store this data on S3 indicating its partition by notification date, and validate that Spark can load that partition without any problems (Nulls, types, not found, or other errors)
+    - This will not be the case for the Census data as it is static. But for the covid case this should be the appropiate approach. I will need to use Airflow to Schedule this process. Call the API (Extract), process the data, remove some noise, adequate the dtypes, create new columns, etc (Transform) and store this data on S3 indicating its partition by notification date, and validate that Spark can load that partition without any problems (Nulls, types, not found, or other errors)
     - The other way is use Airflow to INSERT a batch of rows to the redshift cluster.
 - The database needed to be accessed by 100+ people.
     - As this project is kind of a data lake in S3. It can be accesed easily by lots of people who need it. But this would not be a Database.

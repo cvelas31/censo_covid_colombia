@@ -48,7 +48,14 @@ if __name__ == "__main__":
                     'fecha_de_muerte': np.datetime64})
     df["divipola_dpto"] = df["c_digo_divipola"].str[:2].astype(int)
     df["divipola_mpio"] = df["c_digo_divipola"].str[2:].astype(int)
-
+    df["sexo"] = df["sexo"].map({"F": "F", "f": "F", "m": "M", "M": "M"})
+    df["edad_q"] = pd.cut(df["edad"], np.append(np.arange(-1, 100, 5),df["edad"].max()))
+    map_edad_q = {}
+    for idx, val in enumerate(df["edad_q"].unique()):
+        map_edad_q[val] = idx+1
+    df["edad_q"] = df["edad_q"].map(map_edad_q).astype(int)
+    df["muerto"] = ~df["fecha_de_muerte"].isnull()
+    df["edad_muerto"] = df["muerto"]*df["edad"]
     df.to_csv(covid_file_path, index=False)
     print("File saved as ", covid_file_path)
     pd2s3(df, bucket, s3_key_covid, s3_resource)

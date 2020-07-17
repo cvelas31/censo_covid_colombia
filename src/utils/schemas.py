@@ -180,7 +180,10 @@ def build_schema_covid(source="covid"):
                              StructField("fecha_de_muerte", DateType()),
                              StructField("Asintomatico", IntegerType()),
                              StructField("divipola_dpto", IntegerType()),
-                             StructField("divipola_mpio", IntegerType())
+                             StructField("divipola_mpio", IntegerType()),
+                             StructField("edad_q", IntegerType()),
+                             StructField("muerto", BooleanType()),
+                             StructField("edad_muerto", IntegerType()),
                              ])
     elif source == "tests":
         schema = StructType([StructField("fecha", DateType()),
@@ -254,6 +257,141 @@ def build_schema_divipola(source="divipola"):
                              ])
     else:
         print("Source not valid. Enter one of the following sources: 'covid', 'tests'")
+    return schema
+
+def build_schema_complete(source="vivienda"):
+    """
+    Build schema for different sources
+
+    Parameters:
+    -----------
+    source : str
+        Table source may be: "VIV", "PER", "HOG", "FALL", "MGN"
+
+    Return:
+    -------
+    schema : spark.schema
+        Spark schema for loading source table
+    """
+    if source == "fallecidos":
+        schema = StructType([StructField("U_DPTO", IntegerType()),
+                             StructField("U_MPIO", IntegerType()),
+                             StructField("UA_CLASE", IntegerType()),
+                             StructField("U_EDIFICA", IntegerType()),
+                             StructField("COD_ENCUESTAS", IntegerType()),
+                             StructField("U_VIVIENDA", IntegerType()),
+                             StructField("F_NROHOG", IntegerType()),
+                             StructField("FA1_NRO_FALL", IntegerType()),
+                             StructField("FA2_SEXO_FALL", IntegerType()),
+                             StructField("FA3_EDAD_FALL", IntegerType()),
+                             StructField("FA4_CERT_DEFUN", IntegerType()),
+                             StructField("UVA_USO_UNIDAD", IntegerType()),
+                             StructField("V_TIPO_VIV", DoubleType()),
+                             StructField("V_CON_OCUP", DoubleType()),
+                             StructField("V_TOT_HOG", DoubleType()),
+                             StructField("V_MAT_PARED", DoubleType()),
+                             StructField("V_MAT_PISO", DoubleType()),
+                             StructField("VA_EE", DoubleType()),
+                             StructField("VA1_ESTRATO", DoubleType()),
+                             StructField("VB_ACU", DoubleType()),
+                             StructField("VC_ALC", DoubleType()),
+                             StructField("VD_GAS", DoubleType()),
+                             StructField("VE_RECBAS", DoubleType()),
+                             StructField("VE1_QSEM", DoubleType()),
+                             StructField("VF_INTERNET", DoubleType()),
+                             StructField("V_TIPO_SERSA", DoubleType()),
+                             StructField("L_TIPO_INST", DoubleType()),
+                             StructField("L_EXISTEHOG", DoubleType()),
+                             StructField("L_TOT_PERL", DoubleType()),
+                             StructField("H_NRO_CUARTOS_H", DoubleType()),
+                             StructField("H_NRO_DORMIT_H", DoubleType()),
+                             StructField("H_DONDE_PREPALIM_H", DoubleType()),
+                             StructField("H_AGUA_COCIN_H", DoubleType()),
+                             StructField("HA_NRO_FALL_H", DoubleType()),
+                             StructField("HA_TOT_PER_H", DoubleType()),
+                             StructField("UA1_LOCALIDAD", IntegerType()),
+                             StructField("U_SECT_RUR", IntegerType()),
+                             StructField("U_SECC_RUR", IntegerType()),
+                             StructField("UA2_CPOB", IntegerType()),
+                             StructField("U_SECT_URB", IntegerType()),
+                             StructField("U_SECC_URB", IntegerType()),
+                             StructField("U_MZA", IntegerType()),
+                             StructField("dpto", StringType()),
+                             StructField("nom_mpio", StringType()),
+                             StructField("tipo_municipio", StringType())])
+    elif source == "personas":
+        schema = StructType([StructField("U_DPTO", IntegerType()),
+                             StructField("U_MPIO", IntegerType()),
+                             StructField("UA_CLASE", IntegerType()),
+                             StructField("U_EDIFICA", IntegerType()),
+                             StructField("COD_ENCUESTAS", IntegerType()),
+                             StructField("U_VIVIENDA", IntegerType()),
+                             StructField("P_NROHOG", IntegerType()),
+                             StructField("P_NRO_PER", IntegerType()),
+                             StructField("P_SEXO", IntegerType()),
+                             StructField("P_EDADR", IntegerType()),
+                             StructField("P_PARENTESCOR", DoubleType()),
+                             StructField("PA_LUG_NAC", IntegerType()),
+                             StructField("PA_VIVIA_5ANOS", DoubleType()),
+                             StructField("PA_VIVIA_1ANO", DoubleType()),
+                             StructField("P_ENFERMO", DoubleType()),
+                             StructField("P_QUEHIZO_PPAL", DoubleType()),
+                             StructField("PA_LO_ATENDIERON", DoubleType()),
+                             StructField("PA1_CALIDAD_SERV", DoubleType()),
+                             StructField("CONDICION_FISICA", DoubleType()),
+                             StructField("P_ALFABETA", DoubleType()),
+                             StructField("PA_ASISTENCIA", DoubleType()),
+                             StructField("P_NIVEL_ANOSR", DoubleType()),
+                             StructField("P_TRABAJO", DoubleType()),
+                             StructField("P_EST_CIVIL", DoubleType()),
+                             StructField("PA_HNV", DoubleType()),
+                             StructField("PA1_THNV", DoubleType()),
+                             StructField("PA2_HNVH", DoubleType()),
+                             StructField("PA3_HNVM", DoubleType()),
+                             StructField("PA_HNVS", DoubleType()),
+                             StructField("PA1_THSV", DoubleType()),
+                             StructField("PA2_HSVH", DoubleType()),
+                             StructField("PA3_HSVM", DoubleType()),
+                             StructField("PA_HFC", DoubleType()),
+                             StructField("PA1_THFC", DoubleType()),
+                             StructField("PA2_HFCH", DoubleType()),
+                             StructField("PA3_HFCM", DoubleType()),
+                             StructField("UVA_USO_UNIDAD", IntegerType()),
+                             StructField("V_TIPO_VIV", DoubleType()),
+                             StructField("V_CON_OCUP", DoubleType()),
+                             StructField("V_TOT_HOG", DoubleType()),
+                             StructField("V_MAT_PARED", DoubleType()),
+                             StructField("V_MAT_PISO", DoubleType()),
+                             StructField("VA_EE", DoubleType()),
+                             StructField("VA1_ESTRATO", DoubleType()),
+                             StructField("VB_ACU", DoubleType()),
+                             StructField("VC_ALC", DoubleType()),
+                             StructField("VD_GAS", DoubleType()),
+                             StructField("VE_RECBAS", DoubleType()),
+                             StructField("VE1_QSEM", DoubleType()),
+                             StructField("VF_INTERNET", DoubleType()),
+                             StructField("V_TIPO_SERSA", DoubleType()),
+                             StructField("L_TIPO_INST", DoubleType()),
+                             StructField("L_EXISTEHOG", DoubleType()),
+                             StructField("L_TOT_PERL", DoubleType()),
+                             StructField("H_NRO_CUARTOS_H", DoubleType()),
+                             StructField("H_NRO_DORMIT_H", DoubleType()),
+                             StructField("H_DONDE_PREPALIM_H", DoubleType()),
+                             StructField("H_AGUA_COCIN_H", DoubleType()),
+                             StructField("HA_NRO_FALL_H", DoubleType()),
+                             StructField("HA_TOT_PER_H", DoubleType()),
+                             StructField("UA1_LOCALIDAD", IntegerType()),
+                             StructField("U_SECT_RUR", IntegerType()),
+                             StructField("U_SECC_RUR", IntegerType()),
+                             StructField("UA2_CPOB", IntegerType()),
+                             StructField("U_SECT_URB", IntegerType()),
+                             StructField("U_SECC_URB", IntegerType()),
+                             StructField("U_MZA", IntegerType()),
+                             StructField("dpto", StringType()),
+                             StructField("nom_mpio", StringType()),
+                             StructField("tipo_municipio", StringType())])
+    else:
+        print("Source not valid. Enter one of the following sources: fallecidos, personas")
     return schema
               
 def get_censo_paths(bucket_s3, directory_key):

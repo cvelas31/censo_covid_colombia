@@ -110,17 +110,18 @@ def download_files_from_s3(curr_dir, s3Bucket, prefix):
     -------
     None
     """
-    if len(os.listdir(curr_dir)) > 1:
-        print(f"Already downloaded {prefix}")
+    if os.path.isfile(curr_dir):
+        print("Is a file")
+    elif len(os.listdir(curr_dir)) > 1:
+        print(f"Already downloaded {prefix}") 
     else:
-        print("Downloading...")
         for s3_object in s3Bucket.objects.filter(Prefix=prefix).all():
             path, filename = os.path.split(s3_object.key)
-            print(path)
             partial_dir = mk_partitioned_dir(curr_dir, path)
             if filename:
+                print("Downloading...", filename)
                 s3Bucket.download_file(s3_object.key, os.path.join(partial_dir, filename))
-        print("Downloaded")
+            print("Downloaded: ",os.path.join(partial_dir, filename))
 
 
 def mk_partitioned_dir(curr_dir, path):
@@ -180,7 +181,7 @@ def identified_partitioned_dir(path, key_val=None):
         return identified_partitioned_dir(path[len(root)+1:], key_val=key_val)
 
 
-def read_multiple_csv(selected_dir, to_concat=[], header=0, n_files=10):
+def read_multiple_csv(selected_dir, to_concat=[], list_of_files=[], header=0, n_files=10):
     """
     Recursive read partitioned csv dataset, adding follder name columns
 
@@ -210,7 +211,9 @@ def read_multiple_csv(selected_dir, to_concat=[], header=0, n_files=10):
                 for key, val in dict_key_val.items():
                     aux[key] = val
             to_concat.append(aux)
+            continue
         elif os.path.isdir(os.path.join(selected_dir, path)):
-            to_concat = read_multiple_csv(os.path.join(selected_dir, path), to_concat=to_concat,
+            list_of_files.append(os.path.join(selected_dir, path))
+            to_concat, list_of_files = read_multiple_csv(os.path.join(selected_dir, path), to_concat=to_concat,
                                           header=header, n_files=n_files)
-    return to_concat
+    return to_concat, list_of_files
