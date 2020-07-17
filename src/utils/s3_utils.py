@@ -181,7 +181,7 @@ def identified_partitioned_dir(path, key_val=None):
         return identified_partitioned_dir(path[len(root)+1:], key_val=key_val)
 
 
-def read_multiple_csv(selected_dir, to_concat=[], list_of_files=[], header=0, n_files=10):
+def read_multiple_csv(selected_dir, to_concat=[], list_of_files=[], header=0, n_files=None):
     """
     Recursive read partitioned csv dataset, adding follder name columns
 
@@ -193,7 +193,7 @@ def read_multiple_csv(selected_dir, to_concat=[], list_of_files=[], header=0, n_
         List to store the pd.DataFrames read
     header : int
         Same as pd header on read_csv
-    n_files : int
+    n_files : int or None
         Maximum number of files to read
 
     Return:
@@ -201,8 +201,9 @@ def read_multiple_csv(selected_dir, to_concat=[], list_of_files=[], header=0, n_
     to_concat : list
         List with all pd.DataFrames read from csvs
     """
-    if len(to_concat) == n_files:
-        return to_concat
+    if n_files is not None:
+        if len(to_concat) == n_files:
+            return to_concat
     for path in os.listdir(selected_dir):
         if path.endswith(".csv"):
             aux = pd.read_csv(os.path.join(selected_dir, path), header=header)
