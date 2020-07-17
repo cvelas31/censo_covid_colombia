@@ -164,6 +164,7 @@ Here is the documentation for both of them
 - Joins Fallecidos aggregates with covid: With all information regarding census and covid by city about deaths. Path:`s3:/censo-covid/final-data/join_fallecidos_covid`.
 
 ### Visualizations
+This visuallizations are in the notebooks section with root name visualizations
 - Visualization COVID
 - Visualization Aggregates Personas
 - Visualization Aggregates Fallecidos
